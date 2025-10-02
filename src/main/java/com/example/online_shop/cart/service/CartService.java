@@ -11,4 +11,6 @@ import org.springframework.stereotype.Service;
 
 public interface CartService {
     CartDto getCartByUserId(Long userId);
+
+    void removeItemFromCart(Long userId, Long productId);
 }
