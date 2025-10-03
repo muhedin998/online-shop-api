@@ -2,6 +2,7 @@ package com.example.online_shop.cart.service;
 
 import com.example.online_shop.cart.dto.AddItemToCartRequestDto;
 import com.example.online_shop.cart.dto.CartDto;
+import com.example.online_shop.cart.dto.UpdateItemQuantityDto;
 import com.example.online_shop.cart.mapper.CartItemMapper;
 import com.example.online_shop.cart.mapper.ShoppingCartMapper;
 import com.example.online_shop.cart.repository.ShoppingCartRepository;
@@ -15,5 +16,7 @@ public interface CartService {
 
     void removeItemFromCart(Long userId, Long productId);
 
-    void addItemToCart(AddItemToCartRequestDto requestDto);
+    CartDto addItemToCart(AddItemToCartRequestDto requestDto);
+
+    CartDto updateItemQuantity(Long userId, Long itemId, Integer quantity);
 }

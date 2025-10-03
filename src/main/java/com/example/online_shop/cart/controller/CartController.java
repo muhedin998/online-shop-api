@@ -1,7 +1,10 @@
 package com.example.online_shop.cart.controller;
 
 import com.example.online_shop.cart.dto.AddItemToCartRequestDto;
+import com.example.online_shop.cart.dto.CartDto;
+import com.example.online_shop.cart.dto.UpdateItemQuantityDto;
 import com.example.online_shop.cart.service.CartService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +23,14 @@ public class CartController {
         return ResponseEntity.created(null).toString();
     }
 
+    @PutMapping("/{userId}/update-quantity/{itemId}")
+    public ResponseEntity<?> updateItemQuantity(@PathVariable Long userId,
+            @PathVariable Long itemId,
+            @Valid @RequestBody UpdateItemQuantityDto requestDto) {
+
+        CartDto updatedCart = cartService.updateItemQuantity(userId, itemId, requestDto.getQuantity());
+        return ResponseEntity.ok(updatedCart);
+    }
     @DeleteMapping("/delete/{userId}/items/{itemId}")
     public ResponseEntity<Void> removeItemFromCart(
             @PathVariable Long userId,
