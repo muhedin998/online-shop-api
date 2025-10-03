@@ -16,10 +16,11 @@ public class CartController {
 
     @PostMapping("/add")
     public String addItemToCart(@RequestBody AddItemToCartRequestDto requestDto) {
-        return "Item added to cart";
+        cartService.addItemToCart(requestDto);
+        return ResponseEntity.created(null).toString();
     }
 
-    @DeleteMapping("/{userId}/items/{itemId}")
+    @DeleteMapping("/delete/{userId}/items/{itemId}")
     public ResponseEntity<Void> removeItemFromCart(
             @PathVariable Long userId,
             @PathVariable Long itemId) {

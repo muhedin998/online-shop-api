@@ -1,5 +1,6 @@
 package com.example.online_shop.cart.service.impl;
 
+import com.example.online_shop.cart.dto.AddItemToCartRequestDto;
 import com.example.online_shop.cart.dto.CartDto;
 import com.example.online_shop.cart.dto.CartItemDto;
 import com.example.online_shop.cart.mapper.ShoppingCartMapper;
@@ -51,6 +52,13 @@ public class CartServiceImpl implements CartService {
         cart.getItems().remove(itemToRemove);
 
         cartRepository.save(cart);
+    }
+
+    @Override
+    public void addItemToCart(AddItemToCartRequestDto requestDto) {
+        ShoppingCart cart = cartRepository.findByUserId(requestDto.getUserId())
+                .orElseThrow(() -> new CartNotFoundException("Cart not found for user: " + requestDto.getUserId()));
+        CartItem newItem =
     }
 
     private ShoppingCart createCartForUser(Long userId) {

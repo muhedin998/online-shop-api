@@ -10,6 +10,9 @@ public class AddItemToCartRequestDto {
     private Long productId;
 
     @NotNull
+    private Long userId;
+
+    @NotNull
     @Min(1)
     private int quantity;
 }

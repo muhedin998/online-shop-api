@@ -1,5 +1,6 @@
 package com.example.online_shop.cart.service;
 
+import com.example.online_shop.cart.dto.AddItemToCartRequestDto;
 import com.example.online_shop.cart.dto.CartDto;
 import com.example.online_shop.cart.mapper.CartItemMapper;
 import com.example.online_shop.cart.mapper.ShoppingCartMapper;
@@ -13,4 +14,6 @@ public interface CartService {
     CartDto getCartByUserId(Long userId);
 
     void removeItemFromCart(Long userId, Long productId);
+
+    void addItemToCart(AddItemToCartRequestDto requestDto);
 }
