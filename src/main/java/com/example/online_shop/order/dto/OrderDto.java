@@ -1,4 +1,4 @@
-package com.example.online_shop.order.dto;// In order/dto/OrderDto.java
+package com.example.online_shop.order.dto;
 import lombok.Data;
 
 import java.math.BigDecimal;
