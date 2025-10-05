@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@RestController
 @RequestMapping("/api/v1/cart")
 public class CartController {
 
@@ -18,9 +19,9 @@ public class CartController {
     }
 
     @PostMapping("/add")
-    public String addItemToCart(@RequestBody AddItemToCartRequestDto requestDto) {
-        cartService.addItemToCart(requestDto);
-        return ResponseEntity.created(null).toString();
+    public ResponseEntity<CartDto> addItemToCart(@RequestBody AddItemToCartRequestDto requestDto) {
+        CartDto cartDto = cartService.addItemToCart(requestDto);
+        return ResponseEntity.ok(cartDto);
     }
 
     @PutMapping("/{userId}/update-quantity/{itemId}")

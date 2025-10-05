@@ -7,6 +7,7 @@ import com.example.online_shop.product.mapper.ProductMapper;
 import com.example.online_shop.product.model.Product;
 import com.example.online_shop.product.repository.ProductRespository;
 import com.example.online_shop.product.service.ProductService;
+import com.example.online_shop.shared.exception.ProductNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProduct(Long id) {
         if (!productRespository.existsById(id)) {
-            throw new RuntimeException("Product not found with id: " + id);
+            throw new ProductNotFoundException(id);
         }
         productRespository.deleteById(id);
     }
@@ -57,7 +58,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDto updateProduct(Long productId, UpdateProductRequestDto requestDto) {
         Product existingProduct = productRespository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ProductNotFoundException(productId));
 
         if (requestDto.getName() != null) {
             existingProduct.setName(requestDto.getName());

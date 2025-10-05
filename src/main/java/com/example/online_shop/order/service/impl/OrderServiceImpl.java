@@ -6,6 +6,7 @@ import com.example.online_shop.order.mapper.OrderMapper;
 import com.example.online_shop.order.model.Order;
 import com.example.online_shop.order.repository.OrderRespository;
 import com.example.online_shop.order.service.OrderService;
+import com.example.online_shop.shared.exception.OrderNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,9 +23,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto getOrderById(Long id) {
-        Optional<Order> order = orderRespository.findById(id);
-        Order realOrder = order.orElseThrow(() -> new IllegalArgumentException("Order not found"));
-        return orderMapper.toDto(order.get());
+        Order order = orderRespository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException(id));
+        return orderMapper.toDto(order);
     }
 
     @Override

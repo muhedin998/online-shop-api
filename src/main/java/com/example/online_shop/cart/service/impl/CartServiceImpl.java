@@ -10,8 +10,7 @@ import com.example.online_shop.cart.repository.ShoppingCartRepository;
 import com.example.online_shop.cart.service.CartService;
 import com.example.online_shop.product.model.Product;
 import com.example.online_shop.product.repository.ProductRespository;
-import com.example.online_shop.shared.exception.CartItemNotFoundException;
-import com.example.online_shop.shared.exception.CartNotFoundException;
+import com.example.online_shop.shared.exception.*;
 import com.example.online_shop.user.model.User;
 import com.example.online_shop.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -49,12 +48,12 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public void removeItemFromCart(Long userId, Long cartItemId) {
         ShoppingCart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new CartNotFoundException("Cart not found for user: " + userId));
+                .orElseThrow(() -> new CartNotFoundException(userId));
 
         CartItem itemToRemove = cart.getItems().stream()
                 .filter(item -> item.getId().equals(cartItemId))
                 .findFirst()
-                .orElseThrow(() -> new CartItemNotFoundException("Item with id " + cartItemId + " not found in cart"));
+                .orElseThrow(() -> new CartItemNotFoundException(cartItemId));
 
         cart.getItems().remove(itemToRemove);
 
@@ -67,7 +66,7 @@ public class CartServiceImpl implements CartService {
         ShoppingCart cart = cartRepository.findByUserId(requestDto.getUserId())
                 .orElseGet(() -> createCartForUser(requestDto.getUserId()));
         Product productToAdd = productRepository.findById(requestDto.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ProductNotFoundException(requestDto.getProductId()));
 
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getProduct().getId().equals(requestDto.getProductId()))
@@ -98,7 +97,7 @@ public class CartServiceImpl implements CartService {
 
     private ShoppingCart createCartForUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
         ShoppingCart newCart = new ShoppingCart();
         newCart.setUser(user);
 
