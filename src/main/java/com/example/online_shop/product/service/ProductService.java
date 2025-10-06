@@ -19,4 +19,6 @@ public interface ProductService {
     Page<ProductDto> getNonFeaturedProducts(Pageable pageable);
 
     ProductDto updateProduct(Long productId, UpdateProductRequestDto requestDto);
+
+    ProductDto getProductById(Long productId);
 }

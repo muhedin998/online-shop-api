@@ -80,4 +80,11 @@ public class ProductServiceImpl implements ProductService {
 
         return productMapper.toDto(updatedProduct);
     }
+
+    @Override
+    public ProductDto getProductById(Long productId) {
+        Product existingProduct = productRespository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(productId));
+        return productMapper.toDto(existingProduct);
+    }
 }
