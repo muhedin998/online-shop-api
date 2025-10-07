@@ -14,5 +14,5 @@ public interface UserService {
 
     UserDto registerUser(@Valid UserRegistrationRequestDto registrationDto);
 
-
+    UserDto getUserByUsername(String userUsername);
 }
