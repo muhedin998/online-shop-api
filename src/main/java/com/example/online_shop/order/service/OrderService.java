@@ -9,5 +9,5 @@ import java.util.Optional;
 public interface OrderService {
     OrderDto getOrderById(Long id);
     OrderDto createOrder(CreateOrderRequestDto orderDto, Long userId);
-
+    void cancelOrder(Long orderId);
 }

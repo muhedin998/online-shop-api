@@ -25,7 +25,7 @@ public class Order {
     private LocalDateTime orderDate;
 
     @Column(nullable = false)
-    private String status;
+    private OrderStatus status;
 
     @Column(nullable = false)
     private BigDecimal totalPrice;

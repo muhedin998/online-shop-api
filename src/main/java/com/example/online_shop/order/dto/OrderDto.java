@@ -1,4 +1,5 @@
 package com.example.online_shop.order.dto;
+import com.example.online_shop.order.model.OrderStatus;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -9,7 +10,7 @@ import java.util.List;
 public class OrderDto {
     private Long id;
     private LocalDateTime orderDate;
-    private String status;
+    private OrderStatus status;
     private BigDecimal totalPrice;
     private List<OrderItemDto> items;
 }

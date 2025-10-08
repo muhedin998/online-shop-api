@@ -8,6 +8,7 @@ import com.example.online_shop.order.dto.OrderDto;
 import com.example.online_shop.order.mapper.OrderMapper;
 import com.example.online_shop.order.model.Order;
 import com.example.online_shop.order.model.OrderItem;
+import com.example.online_shop.order.model.OrderStatus;
 import com.example.online_shop.order.repository.OrderRepository;
 import com.example.online_shop.order.service.OrderService;
 import com.example.online_shop.product.model.Product;
@@ -72,7 +73,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
-        order.setStatus("PENDING"); // TODO: Use enum for order status
+        order.setStatus(OrderStatus.PENDING);
 
         List<OrderItem> orderItems = new ArrayList<>();
         BigDecimal totalPrice = BigDecimal.ZERO;
@@ -113,5 +114,26 @@ public class OrderServiceImpl implements OrderService {
                 savedOrder.getId(), userId, totalPrice);
 
         return orderMapper.toDto(savedOrder);
+    }
+
+    @Override
+    public void cancelOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (OrderStatus.CANCELED.equals(order.getStatus())) {
+            log.warn("Attempted to cancel an already cancelled order ID: {}", orderId);
+            throw new BusinessException("Order is already cancelled");
+        }
+
+        if (OrderStatus.SHIPPED.equals(order.getStatus()) || OrderStatus.DELIVERED.equals(order.getStatus())) {
+            log.warn("Attempted to cancel an order ID: {} that is already shipped or delivered", orderId);
+            throw new BusinessException("Cannot cancel order that is already shipped or delivered");
+        }
+
+        order.setStatus(OrderStatus.CANCELED);
+        orderRepository.save(order);
+
+        log.info("Order ID: {} has been cancelled", orderId);
     }
 }
