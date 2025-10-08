@@ -8,13 +8,16 @@ import com.example.online_shop.product.model.Product;
 import com.example.online_shop.product.repository.ProductRespository;
 import com.example.online_shop.product.service.ProductService;
 import com.example.online_shop.shared.exception.ProductNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ProductServiceImpl implements ProductService {
     private final ProductRespository productRespository;
@@ -26,14 +29,18 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductDto addProduct(CreateProductRequestDto productDto) {
+        log.info("Adding new product: {}", productDto.getName());
         Product newProduct = productMapper.toEntity(productDto);
         Product savedProduct = productRespository.save(newProduct);
+        log.info("Successfully added product with ID: {}", savedProduct.getId());
 
         return productMapper.toDto(savedProduct);
     }
 
     @Override
+    @Transactional
     public void deleteProduct(Long id) {
         if (!productRespository.existsById(id)) {
             throw new ProductNotFoundException(id);
@@ -56,6 +63,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductDto updateProduct(Long productId, UpdateProductRequestDto requestDto) {
         Product existingProduct = productRespository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));

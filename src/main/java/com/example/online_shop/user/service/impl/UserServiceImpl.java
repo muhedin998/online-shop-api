@@ -11,6 +11,7 @@ import com.example.online_shop.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -29,6 +30,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDto registerUser(UserRegistrationRequestDto registrationDto) {
         if (userRepository.existsByUsername(registrationDto.getUsername())) {
             throw new UserAlreadyExistsException("Username is already taken!");
