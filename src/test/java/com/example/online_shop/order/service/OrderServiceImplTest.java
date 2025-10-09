@@ -7,6 +7,7 @@ import com.example.online_shop.order.dto.CreateOrderRequestDto;
 import com.example.online_shop.order.dto.OrderDto;
 import com.example.online_shop.order.mapper.OrderMapper;
 import com.example.online_shop.order.model.Order;
+import com.example.online_shop.order.model.OrderStatus;
 import com.example.online_shop.order.repository.OrderRepository;
 import com.example.online_shop.order.service.impl.OrderServiceImpl;
 import com.example.online_shop.product.model.Product;
@@ -81,7 +82,7 @@ class OrderServiceImplTest {
         testOrder = new Order();
         testOrder.setId(1L);
         testOrder.setUser(testUser);
-        testOrder.setStatus("PENDING");
+        testOrder.setStatus(OrderStatus.PENDING);
         testOrder.setTotalPrice(BigDecimal.valueOf(200));
 
         testOrderDto = new OrderDto();

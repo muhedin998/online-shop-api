@@ -5,7 +5,10 @@ import com.example.online_shop.shared.exception.UserNotFoundException;
 import com.example.online_shop.user.dto.UserDto;
 import com.example.online_shop.user.dto.UserRegistrationRequestDto;
 import com.example.online_shop.user.mapper.UserMapper;
+import com.example.online_shop.user.model.Role;
+import com.example.online_shop.user.model.RoleName;
 import com.example.online_shop.user.model.User;
+import com.example.online_shop.user.repository.RoleRepository;
 import com.example.online_shop.user.repository.UserRepository;
 import com.example.online_shop.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +16,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +27,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     @Override
     public User loadUserByUsername(String username) {
@@ -43,6 +49,13 @@ public class UserServiceImpl implements UserService {
 
         User newUser = userMapper.toEntity(registrationDto);
         newUser.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
+
+        Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
+                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+        Set<Role> roles = new HashSet<>();
+        roles.add(userRole);
+        newUser.setRoles(roles);
+
         User savedUser = userRepository.save(newUser);
         return userMapper.toDto(savedUser);
     }
