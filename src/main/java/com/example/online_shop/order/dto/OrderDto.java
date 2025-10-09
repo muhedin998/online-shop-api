@@ -13,4 +13,5 @@ public class OrderDto {
     private OrderStatus status;
     private BigDecimal totalPrice;
     private List<OrderItemDto> items;
+    private String trackingNumber;
 }

@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -104,6 +105,7 @@ public class OrderServiceImpl implements OrderService {
 
         order.setOrderItems(orderItems);
         order.setTotalPrice(totalPrice);
+        order.setTrackingNumber(generateTrackingNumber());
 
         Order savedOrder = orderRepository.save(order);
 
@@ -135,5 +137,13 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
 
         log.info("Order ID: {} has been cancelled", orderId);
+    }
+
+    /**
+     * Generates a unique tracking number for orders.
+     * Format: TRK-{UUID} (e.g., TRK-550e8400-e29b-41d4-a716-446655440000)
+     */
+    private String generateTrackingNumber() {
+        return "TRK-" + UUID.randomUUID().toString();
     }
 }
