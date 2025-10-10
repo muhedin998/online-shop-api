@@ -7,7 +7,7 @@ import com.example.online_shop.product.mapper.ProductMapper;
 import com.example.online_shop.product.model.Product;
 import com.example.online_shop.product.repository.ProductRepository;
 import com.example.online_shop.product.service.impl.ProductServiceImpl;
-import com.example.online_shop.shared.exception.ProductNotFoundException;
+import com.example.online_shop.shared.exception.domain.ProductNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

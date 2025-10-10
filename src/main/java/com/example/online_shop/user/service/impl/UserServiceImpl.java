@@ -1,7 +1,7 @@
 package com.example.online_shop.user.service.impl;
 
-import com.example.online_shop.shared.exception.UserAlreadyExistsException;
-import com.example.online_shop.shared.exception.UserNotFoundException;
+import com.example.online_shop.shared.exception.domain.UserAlreadyExistsException;
+import com.example.online_shop.shared.exception.domain.UserNotFoundException;
 import com.example.online_shop.user.dto.UserDto;
 import com.example.online_shop.user.dto.UserRegistrationRequestDto;
 import com.example.online_shop.user.mapper.UserMapper;

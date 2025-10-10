@@ -9,7 +9,11 @@ import com.example.online_shop.cart.repository.ShoppingCartRepository;
 import com.example.online_shop.cart.service.CartService;
 import com.example.online_shop.product.model.Product;
 import com.example.online_shop.product.repository.ProductRepository;
-import com.example.online_shop.shared.exception.*;
+import com.example.online_shop.shared.exception.domain.CartItemNotFoundException;
+import com.example.online_shop.shared.exception.domain.CartNotFoundException;
+import com.example.online_shop.shared.exception.domain.InsufficientStockException;
+import com.example.online_shop.shared.exception.domain.ProductNotFoundException;
+import com.example.online_shop.shared.exception.domain.UserNotFoundException;
 import com.example.online_shop.user.model.User;
 import com.example.online_shop.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -75,7 +79,8 @@ public class CartServiceImpl implements CartService {
 
         // TODO: Implement stock validation - check if requested quantity is available
         if (productToAdd.getStockQuantity() < requestDto.getQuantity()) {
-            throw new BusinessException("Insufficient stock. Available: " + productToAdd.getStockQuantity());
+            throw new InsufficientStockException(productToAdd.getName(),
+                    productToAdd.getStockQuantity(), requestDto.getQuantity());
         }
 
         Optional<CartItem> existingItem = cart.getItems().stream()
@@ -88,7 +93,8 @@ public class CartServiceImpl implements CartService {
 
             // TODO: Validate total quantity against stock
             if (productToAdd.getStockQuantity() < newQuantity) {
-                throw new BusinessException("Insufficient stock. Available: " + productToAdd.getStockQuantity());
+                throw new InsufficientStockException(productToAdd.getName(),
+                        productToAdd.getStockQuantity(), newQuantity);
             }
 
             log.debug("Updating existing cart item quantity from {} to {}",

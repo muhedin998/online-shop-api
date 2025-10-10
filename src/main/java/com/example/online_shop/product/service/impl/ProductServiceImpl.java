@@ -7,7 +7,7 @@ import com.example.online_shop.product.mapper.ProductMapper;
 import com.example.online_shop.product.model.Product;
 import com.example.online_shop.product.repository.ProductRepository;
 import com.example.online_shop.product.service.ProductService;
-import com.example.online_shop.shared.exception.ProductNotFoundException;
+import com.example.online_shop.shared.exception.domain.ProductNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

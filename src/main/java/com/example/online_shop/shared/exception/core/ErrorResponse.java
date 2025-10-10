@@ -1,4 +1,4 @@
-package com.example.online_shop.shared.exception;
+package com.example.online_shop.shared.exception.core;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

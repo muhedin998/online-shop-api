@@ -14,9 +14,8 @@ import com.example.online_shop.order.model.OrderStatus;
 import com.example.online_shop.order.repository.OrderRepository;
 import com.example.online_shop.order.service.impl.OrderServiceImpl;
 import com.example.online_shop.product.model.Product;
-import com.example.online_shop.shared.exception.BusinessException;
-import com.example.online_shop.shared.exception.CartNotFoundException;
-import com.example.online_shop.shared.exception.OrderNotFoundException;
+import com.example.online_shop.shared.exception.core.*;
+import com.example.online_shop.shared.exception.domain.*;
 import com.example.online_shop.user.model.User;
 import com.example.online_shop.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -269,7 +268,7 @@ class OrderServiceImplTest {
         when(addressRepository.findById(1L)).thenReturn(Optional.of(wrongUserAddress));
 
         // Act & Assert
-        assertThrows(BusinessException.class,
+        assertThrows(UnauthorizedAccessException.class,
                 () -> orderService.createOrder(requestWithAddressId, 1L));
     }
 
@@ -282,7 +281,7 @@ class OrderServiceImplTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
         // Act & Assert
-        assertThrows(BusinessException.class,
+        assertThrows(ValidationException.class,
                 () -> orderService.createOrder(emptyRequest, 1L));
     }
 }

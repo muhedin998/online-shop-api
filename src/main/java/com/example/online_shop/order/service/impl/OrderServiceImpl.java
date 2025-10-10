@@ -16,9 +16,8 @@ import com.example.online_shop.order.model.OrderStatus;
 import com.example.online_shop.order.repository.OrderRepository;
 import com.example.online_shop.order.service.OrderService;
 import com.example.online_shop.product.model.Product;
-import com.example.online_shop.shared.exception.BusinessException;
-import com.example.online_shop.shared.exception.CartNotFoundException;
-import com.example.online_shop.shared.exception.OrderNotFoundException;
+import com.example.online_shop.shared.exception.core.*;
+import com.example.online_shop.shared.exception.domain.*;
 import com.example.online_shop.user.model.User;
 import com.example.online_shop.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -95,8 +94,8 @@ public class OrderServiceImpl implements OrderService {
 
             // TODO: Implement inventory deduction - reduce stock when order is placed
             if (product.getStockQuantity() < cartItem.getQuantity()) {
-                throw new BusinessException("Insufficient stock for product: " + product.getName() +
-                        ". Available: " + product.getStockQuantity() + ", Requested: " + cartItem.getQuantity());
+                throw new InsufficientStockException(product.getName(),
+                        product.getStockQuantity(), cartItem.getQuantity());
             }
 
             product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
@@ -166,11 +165,11 @@ public class OrderServiceImpl implements OrderService {
         if (orderDto.getAddressId() != null) {
             // Use saved address from address book
             Address savedAddress = addressRepository.findById(orderDto.getAddressId())
-                    .orElseThrow(() -> new BusinessException("Address not found with id: " + orderDto.getAddressId()));
+                    .orElseThrow(() -> new AddressNotFoundException(orderDto.getAddressId()));
 
             // Verify address belongs to the user
             if (!savedAddress.getUser().getId().equals(userId)) {
-                throw new BusinessException("Address does not belong to the user");
+                throw new UnauthorizedAccessException("Address does not belong to the user");
             }
 
             // Verify address is not archived
@@ -183,7 +182,7 @@ public class OrderServiceImpl implements OrderService {
             // Use new address provided in the request
             return convertToAddressFields(orderDto.getShippingAddress());
         } else {
-            throw new BusinessException("Either addressId or shippingAddress must be provided");
+            throw new ValidationException("Either addressId or shippingAddress must be provided");
         }
     }
 

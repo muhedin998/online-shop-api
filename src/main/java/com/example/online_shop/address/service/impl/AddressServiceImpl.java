@@ -5,7 +5,7 @@ import com.example.online_shop.address.mapper.AddressMapper;
 import com.example.online_shop.address.model.Address;
 import com.example.online_shop.address.repository.AddressRepository;
 import com.example.online_shop.address.service.AddressService;
-import com.example.online_shop.shared.exception.UserNotFoundException;
+import com.example.online_shop.shared.exception.domain.UserNotFoundException;
 import com.example.online_shop.user.model.User;
 import com.example.online_shop.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
