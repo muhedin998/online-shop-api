@@ -36,4 +36,8 @@ public class Product {
     @Column(name = "image_url")
     private List<String> carouselImageUrls;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private ProductCategory category;
+
 }

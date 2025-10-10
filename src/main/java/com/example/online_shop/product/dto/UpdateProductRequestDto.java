@@ -19,4 +19,6 @@ public class UpdateProductRequestDto {
     private Integer stockQuantity;
 
     private Boolean featured;
+
+    private Long categoryId;
 }

@@ -5,8 +5,11 @@ import com.example.online_shop.product.dto.ProductDto;
 import com.example.online_shop.product.dto.UpdateProductRequestDto;
 import com.example.online_shop.product.mapper.ProductMapper;
 import com.example.online_shop.product.model.Product;
+import com.example.online_shop.product.model.ProductCategory;
+import com.example.online_shop.product.repository.ProductCategoryRepository;
 import com.example.online_shop.product.repository.ProductRepository;
 import com.example.online_shop.product.service.ProductService;
+import com.example.online_shop.shared.exception.domain.ProductCategoryNotFoundException;
 import com.example.online_shop.shared.exception.domain.ProductNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,10 +25,12 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final ProductCategoryRepository categoryRepository;
 
-    public ProductServiceImpl(ProductRepository productRepository, ProductMapper productMapper) {
+    public ProductServiceImpl(ProductRepository productRepository, ProductMapper productMapper, ProductCategoryRepository categoryRepository) {
         this.productRepository = productRepository;
         this.productMapper = productMapper;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
@@ -33,6 +38,14 @@ public class ProductServiceImpl implements ProductService {
     public ProductDto addProduct(CreateProductRequestDto productDto) {
         log.info("Adding new product: {}", productDto.getName());
         Product newProduct = productMapper.toEntity(productDto);
+
+        // Set category if provided
+        if (productDto.getCategoryId() != null) {
+            ProductCategory category = categoryRepository.findById(productDto.getCategoryId())
+                    .orElseThrow(() -> new ProductCategoryNotFoundException(productDto.getCategoryId()));
+            newProduct.setCategory(category);
+        }
+
         Product savedProduct = productRepository.save(newProduct);
         log.info("Successfully added product with ID: {}", savedProduct.getId());
 
@@ -82,6 +95,11 @@ public class ProductServiceImpl implements ProductService {
         }
         if (requestDto.getFeatured() != null) {
             existingProduct.setFeatured(requestDto.getFeatured());
+        }
+        if (requestDto.getCategoryId() != null) {
+            ProductCategory category = categoryRepository.findById(requestDto.getCategoryId())
+                    .orElseThrow(() -> new ProductCategoryNotFoundException(requestDto.getCategoryId()));
+            existingProduct.setCategory(category);
         }
 
         Product updatedProduct = productRepository.save(existingProduct);

@@ -1,12 +1,12 @@
-package com.example.online_shop.product.mapper;// In product/mapper/ProductMapper.java
+package com.example.online_shop.product.mapper;
+
 import com.example.online_shop.product.dto.CreateProductRequestDto;
 import com.example.online_shop.product.dto.ProductDto;
 import com.example.online_shop.product.model.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {ProductCategoryMapper.class})
 public interface ProductMapper {
 
     // Converts Entity -> DTO
@@ -14,5 +14,8 @@ public interface ProductMapper {
 
     // Converts Request DTO -> Entity
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "mainImageUrl", ignore = true)
+    @Mapping(target = "carouselImageUrls", ignore = true)
+    @Mapping(target = "category", ignore = true)
     Product toEntity(CreateProductRequestDto createProductRequestDto);
 }

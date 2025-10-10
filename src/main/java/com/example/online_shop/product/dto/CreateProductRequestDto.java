@@ -22,4 +22,6 @@ public class CreateProductRequestDto {
 
     @NotNull(message = "Featured status cannot be null")
     private Boolean featured;
+
+    private Long categoryId;
 }
