@@ -1,9 +1,13 @@
 package com.example.online_shop.order.service.impl;
 
+import com.example.online_shop.address.dto.AddressDto;
+import com.example.online_shop.address.model.Address;
+import com.example.online_shop.address.repository.AddressRepository;
 import com.example.online_shop.cart.model.CartItem;
 import com.example.online_shop.cart.model.ShoppingCart;
 import com.example.online_shop.cart.repository.ShoppingCartRepository;
 import com.example.online_shop.order.dto.CreateOrderRequestDto;
+import com.example.online_shop.order.model.AddressFields;
 import com.example.online_shop.order.dto.OrderDto;
 import com.example.online_shop.order.mapper.OrderMapper;
 import com.example.online_shop.order.model.Order;
@@ -35,15 +39,18 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final ShoppingCartRepository cartRepository;
     private final UserRepository userRepository;
+    private final AddressRepository addressRepository;
 
     public OrderServiceImpl(OrderMapper orderMapper,
                            OrderRepository orderRepository,
                            ShoppingCartRepository cartRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository,
+                           AddressRepository addressRepository) {
         this.orderMapper = orderMapper;
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.userRepository = userRepository;
+        this.addressRepository = addressRepository;
     }
 
     @Override
@@ -75,6 +82,10 @@ public class OrderServiceImpl implements OrderService {
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
         order.setStatus(OrderStatus.PENDING);
+
+        // Resolve the shipping address - either from saved address or new address
+        AddressFields shipping = resolveShippingAddress(orderDto, userId);
+        order.setShippingAddress(shipping);
 
         List<OrderItem> orderItems = new ArrayList<>();
         BigDecimal totalPrice = BigDecimal.ZERO;
@@ -145,5 +156,66 @@ public class OrderServiceImpl implements OrderService {
      */
     private String generateTrackingNumber() {
         return "TRK-" + UUID.randomUUID().toString();
+    }
+
+    /**
+     * Resolves shipping address from either saved address ID or new address DTO.
+     * Creates a snapshot (AddressFields) that is embedded in the order.
+     */
+    private AddressFields resolveShippingAddress(CreateOrderRequestDto orderDto, Long userId) {
+        if (orderDto.getAddressId() != null) {
+            // Use saved address from address book
+            Address savedAddress = addressRepository.findById(orderDto.getAddressId())
+                    .orElseThrow(() -> new BusinessException("Address not found with id: " + orderDto.getAddressId()));
+
+            // Verify address belongs to the user
+            if (!savedAddress.getUser().getId().equals(userId)) {
+                throw new BusinessException("Address does not belong to the user");
+            }
+
+            // Verify address is not archived
+            if (savedAddress.getArchived()) {
+                throw new BusinessException("Cannot use archived address");
+            }
+
+            return convertToAddressFields(savedAddress);
+        } else if (orderDto.getShippingAddress() != null) {
+            // Use new address provided in the request
+            return convertToAddressFields(orderDto.getShippingAddress());
+        } else {
+            throw new BusinessException("Either addressId or shippingAddress must be provided");
+        }
+    }
+
+    /**
+     * Converts Address entity to AddressFields (snapshot for order).
+     */
+    private AddressFields convertToAddressFields(Address address) {
+        AddressFields fields = new AddressFields();
+        fields.setFullName(address.getFullName());
+        fields.setAddressLine1(address.getAddressLine1());
+        fields.setAddressLine2(address.getAddressLine2());
+        fields.setCity(address.getCity());
+        fields.setState(address.getState());
+        fields.setPostalCode(address.getPostalCode());
+        fields.setCountryCode(address.getCountryCode().toUpperCase());
+        fields.setPhone(address.getPhone());
+        return fields;
+    }
+
+    /**
+     * Converts AddressDto to AddressFields (snapshot for order).
+     */
+    private AddressFields convertToAddressFields(AddressDto addressDto) {
+        AddressFields fields = new AddressFields();
+        fields.setFullName(addressDto.getFullName());
+        fields.setAddressLine1(addressDto.getAddressLine1());
+        fields.setAddressLine2(addressDto.getAddressLine2());
+        fields.setCity(addressDto.getCity());
+        fields.setState(addressDto.getState());
+        fields.setPostalCode(addressDto.getPostalCode());
+        fields.setCountryCode(addressDto.getCountryCode().toUpperCase());
+        fields.setPhone(addressDto.getPhone());
+        return fields;
     }
 }

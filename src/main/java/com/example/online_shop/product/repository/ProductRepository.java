@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ProductRespository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByFeaturedTrue();
 
     Page<Product> findByFeaturedFalse(Pageable pageable);

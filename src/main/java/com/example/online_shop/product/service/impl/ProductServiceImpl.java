@@ -5,7 +5,7 @@ import com.example.online_shop.product.dto.ProductDto;
 import com.example.online_shop.product.dto.UpdateProductRequestDto;
 import com.example.online_shop.product.mapper.ProductMapper;
 import com.example.online_shop.product.model.Product;
-import com.example.online_shop.product.repository.ProductRespository;
+import com.example.online_shop.product.repository.ProductRepository;
 import com.example.online_shop.product.service.ProductService;
 import com.example.online_shop.shared.exception.ProductNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class ProductServiceImpl implements ProductService {
-    private final ProductRespository productRespository;
+    private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
-    public ProductServiceImpl(ProductRespository productRespository, ProductMapper productMapper) {
-        this.productRespository = productRespository;
+    public ProductServiceImpl(ProductRepository productRepository, ProductMapper productMapper) {
+        this.productRepository = productRepository;
         this.productMapper = productMapper;
     }
 
@@ -33,7 +33,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductDto addProduct(CreateProductRequestDto productDto) {
         log.info("Adding new product: {}", productDto.getName());
         Product newProduct = productMapper.toEntity(productDto);
-        Product savedProduct = productRespository.save(newProduct);
+        Product savedProduct = productRepository.save(newProduct);
         log.info("Successfully added product with ID: {}", savedProduct.getId());
 
         return productMapper.toDto(savedProduct);
@@ -42,15 +42,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void deleteProduct(Long id) {
-        if (!productRespository.existsById(id)) {
+        if (!productRepository.existsById(id)) {
             throw new ProductNotFoundException(id);
         }
-        productRespository.deleteById(id);
+        productRepository.deleteById(id);
     }
 
     @Override
     public List<ProductDto> getFeaturedProducts() {
-        List<Product> featuredProducts = productRespository.findByFeaturedTrue();
+        List<Product> featuredProducts = productRepository.findByFeaturedTrue();
         return featuredProducts.stream()
                 .map(productMapper::toDto)
                 .collect(Collectors.toList());
@@ -58,14 +58,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<ProductDto> getNonFeaturedProducts(Pageable pageable) {
-        Page<Product> productPage = productRespository.findByFeaturedFalse(pageable);
+        Page<Product> productPage = productRepository.findByFeaturedFalse(pageable);
         return productPage.map(productMapper::toDto);
     }
 
     @Override
     @Transactional
     public ProductDto updateProduct(Long productId, UpdateProductRequestDto requestDto) {
-        Product existingProduct = productRespository.findById(productId)
+        Product existingProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
         if (requestDto.getName() != null) {
@@ -84,14 +84,14 @@ public class ProductServiceImpl implements ProductService {
             existingProduct.setFeatured(requestDto.getFeatured());
         }
 
-        Product updatedProduct = productRespository.save(existingProduct);
+        Product updatedProduct = productRepository.save(existingProduct);
 
         return productMapper.toDto(updatedProduct);
     }
 
     @Override
     public ProductDto getProductById(Long productId) {
-        Product existingProduct = productRespository.findById(productId)
+        Product existingProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
         return productMapper.toDto(existingProduct);
     }

@@ -5,7 +5,7 @@ import com.example.online_shop.product.dto.ProductDto;
 import com.example.online_shop.product.dto.UpdateProductRequestDto;
 import com.example.online_shop.product.mapper.ProductMapper;
 import com.example.online_shop.product.model.Product;
-import com.example.online_shop.product.repository.ProductRespository;
+import com.example.online_shop.product.repository.ProductRepository;
 import com.example.online_shop.product.service.impl.ProductServiceImpl;
 import com.example.online_shop.shared.exception.ProductNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 class ProductServiceImplTest {
 
     @Mock
-    private ProductRespository productRepository;
+    private ProductRepository productRepository;
 
     @Mock
     private ProductMapper productMapper;

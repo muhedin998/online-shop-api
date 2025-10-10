@@ -37,4 +37,7 @@ public class Order {
     @Column(unique = true)
     private String trackingNumber;
 
+    @Embedded
+    private AddressFields shippingAddress;
+
 }

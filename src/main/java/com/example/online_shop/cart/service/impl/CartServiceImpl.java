@@ -2,14 +2,13 @@ package com.example.online_shop.cart.service.impl;
 
 import com.example.online_shop.cart.dto.AddItemToCartRequestDto;
 import com.example.online_shop.cart.dto.CartDto;
-import com.example.online_shop.cart.dto.UpdateItemQuantityDto;
 import com.example.online_shop.cart.mapper.ShoppingCartMapper;
 import com.example.online_shop.cart.model.CartItem;
 import com.example.online_shop.cart.model.ShoppingCart;
 import com.example.online_shop.cart.repository.ShoppingCartRepository;
 import com.example.online_shop.cart.service.CartService;
 import com.example.online_shop.product.model.Product;
-import com.example.online_shop.product.repository.ProductRespository;
+import com.example.online_shop.product.repository.ProductRepository;
 import com.example.online_shop.shared.exception.*;
 import com.example.online_shop.user.model.User;
 import com.example.online_shop.user.repository.UserRepository;
@@ -25,12 +24,12 @@ public class CartServiceImpl implements CartService {
     private final ShoppingCartRepository cartRepository;
     private final UserRepository userRepository;
     private final ShoppingCartMapper cartMapper;
-    private final ProductRespository productRepository;
+    private final ProductRepository productRepository;
 
     public CartServiceImpl(ShoppingCartRepository cartRepository,
                            UserRepository userRepository,
                            ShoppingCartMapper cartMapper,
-                           ProductRespository productRepository) {
+                           ProductRepository productRepository) {
         this.cartRepository = cartRepository;
         this.userRepository = userRepository;
         this.cartMapper = cartMapper;

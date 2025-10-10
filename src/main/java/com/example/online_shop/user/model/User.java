@@ -1,5 +1,6 @@
 package com.example.online_shop.user.model;
 
+import com.example.online_shop.address.model.Address;
 import com.example.online_shop.order.model.Order;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -36,6 +37,9 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user")
     private List<Order> orders;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Address> addresses;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

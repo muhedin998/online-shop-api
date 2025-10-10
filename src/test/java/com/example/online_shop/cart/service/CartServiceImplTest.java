@@ -8,7 +8,7 @@ import com.example.online_shop.cart.model.ShoppingCart;
 import com.example.online_shop.cart.repository.ShoppingCartRepository;
 import com.example.online_shop.cart.service.impl.CartServiceImpl;
 import com.example.online_shop.product.model.Product;
-import com.example.online_shop.product.repository.ProductRespository;
+import com.example.online_shop.product.repository.ProductRepository;
 import com.example.online_shop.shared.exception.BusinessException;
 import com.example.online_shop.shared.exception.CartItemNotFoundException;
 import com.example.online_shop.shared.exception.CartNotFoundException;
@@ -43,7 +43,7 @@ class CartServiceImplTest {
     private ShoppingCartMapper cartMapper;
 
     @Mock
-    private ProductRespository productRepository;
+    private ProductRepository productRepository;
 
     @InjectMocks
     private CartServiceImpl cartService;

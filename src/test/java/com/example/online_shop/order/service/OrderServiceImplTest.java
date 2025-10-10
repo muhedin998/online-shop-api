@@ -1,6 +1,9 @@
 package com.example.online_shop.order.service;
 
+import com.example.online_shop.address.model.Address;
+import com.example.online_shop.address.repository.AddressRepository;
 import com.example.online_shop.cart.model.CartItem;
+import com.example.online_shop.address.dto.AddressDto;
 import com.example.online_shop.cart.model.ShoppingCart;
 import com.example.online_shop.cart.repository.ShoppingCartRepository;
 import com.example.online_shop.order.dto.CreateOrderRequestDto;
@@ -47,6 +50,9 @@ class OrderServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private AddressRepository addressRepository;
+
     @InjectMocks
     private OrderServiceImpl orderService;
 
@@ -89,7 +95,13 @@ class OrderServiceImplTest {
         testOrderDto.setId(1L);
 
         createOrderRequest = new CreateOrderRequestDto();
-        createOrderRequest.setShippingAddress("123 Test St");
+        AddressDto addr = new AddressDto();
+        addr.setFullName("John Test");
+        addr.setAddressLine1("123 Test St");
+        addr.setCity("Testville");
+        addr.setPostalCode("12345");
+        addr.setCountryCode("US");
+        createOrderRequest.setShippingAddress(addr);
     }
 
     @Test
@@ -185,5 +197,92 @@ class OrderServiceImplTest {
         // Assert
         assertTrue(testCart.getItems().isEmpty());
         verify(cartRepository).save(testCart);
+    }
+
+    @Test
+    void createOrder_WithSavedAddress_Success() {
+        // Arrange
+        Address savedAddress = new Address();
+        savedAddress.setId(1L);
+        savedAddress.setUser(testUser);
+        savedAddress.setFullName("Jane Saved");
+        savedAddress.setAddressLine1("456 Saved St");
+        savedAddress.setCity("Savedville");
+        savedAddress.setPostalCode("67890");
+        savedAddress.setCountryCode("US");
+        savedAddress.setArchived(false);
+
+        CreateOrderRequestDto requestWithAddressId = new CreateOrderRequestDto();
+        requestWithAddressId.setAddressId(1L);
+
+        when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(testCart));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(addressRepository.findById(1L)).thenReturn(Optional.of(savedAddress));
+        when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
+        when(cartRepository.save(any(ShoppingCart.class))).thenReturn(testCart);
+        when(orderMapper.toDto(any(Order.class))).thenReturn(testOrderDto);
+
+        // Act
+        OrderDto result = orderService.createOrder(requestWithAddressId, 1L);
+
+        // Assert
+        assertNotNull(result);
+        verify(addressRepository).findById(1L);
+        verify(orderRepository).save(any(Order.class));
+    }
+
+    @Test
+    void createOrder_WithArchivedAddress_ThrowsException() {
+        // Arrange
+        Address archivedAddress = new Address();
+        archivedAddress.setId(1L);
+        archivedAddress.setUser(testUser);
+        archivedAddress.setArchived(true);
+
+        CreateOrderRequestDto requestWithAddressId = new CreateOrderRequestDto();
+        requestWithAddressId.setAddressId(1L);
+
+        when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(testCart));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(addressRepository.findById(1L)).thenReturn(Optional.of(archivedAddress));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> orderService.createOrder(requestWithAddressId, 1L));
+    }
+
+    @Test
+    void createOrder_WithWrongUserAddress_ThrowsException() {
+        // Arrange
+        User anotherUser = new User();
+        anotherUser.setId(2L);
+
+        Address wrongUserAddress = new Address();
+        wrongUserAddress.setId(1L);
+        wrongUserAddress.setUser(anotherUser);
+
+        CreateOrderRequestDto requestWithAddressId = new CreateOrderRequestDto();
+        requestWithAddressId.setAddressId(1L);
+
+        when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(testCart));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(addressRepository.findById(1L)).thenReturn(Optional.of(wrongUserAddress));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> orderService.createOrder(requestWithAddressId, 1L));
+    }
+
+    @Test
+    void createOrder_WithNoAddress_ThrowsException() {
+        // Arrange
+        CreateOrderRequestDto emptyRequest = new CreateOrderRequestDto();
+
+        when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(testCart));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> orderService.createOrder(emptyRequest, 1L));
     }
 }
