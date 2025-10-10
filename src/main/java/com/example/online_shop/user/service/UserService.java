@@ -15,4 +15,8 @@ public interface UserService {
     UserDto registerUser(@Valid UserRegistrationRequestDto registrationDto);
 
     UserDto getUserByUsername(String userUsername);
+
+    void initiatePasswordReset(String email);
+
+    void resetPassword(String token, String newPassword);
 }

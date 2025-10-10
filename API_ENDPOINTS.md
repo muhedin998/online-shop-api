@@ -9,6 +9,8 @@ All endpoints use the `/api/v1` prefix for consistent versioning.
 |--------|----------|-------------|--------------|
 | POST | `/register` | Register a new user | UserRegistrationRequestDto |
 | POST | `/login` | Authenticate and get JWT token | LoginRequestDto |
+| POST | `/forgot-password` | Request password reset token via email | ForgotPasswordRequestDto |
+| POST | `/reset-password` | Reset password using token | ResetPasswordRequestDto |
 
 ---
 
@@ -89,6 +91,8 @@ Authorization: Bearer <your-jwt-token>
 ### Public Endpoints (No Auth Required)
 - POST `/api/v1/auth/register`
 - POST `/api/v1/auth/login`
+- POST `/api/v1/auth/forgot-password`
+- POST `/api/v1/auth/reset-password`
 - GET `/api/v1/products` (browsing products)
 - GET `/api/v1/products/{productId}`
 - GET `/api/v1/products/featured`
@@ -108,6 +112,27 @@ Content-Type: application/json
   "password": "SecurePass123!",
   "firstName": "John",
   "lastName": "Doe"
+}
+```
+
+### Forgot Password
+```bash
+POST /api/v1/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "john@example.com"
+}
+```
+
+### Reset Password
+```bash
+POST /api/v1/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "550e8400-e29b-41d4-a716-446655440000",
+  "newPassword": "NewSecurePass123!"
 }
 ```
 
