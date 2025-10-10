@@ -9,6 +9,7 @@ import com.example.online_shop.cart.repository.ShoppingCartRepository;
 import com.example.online_shop.order.dto.CreateOrderRequestDto;
 import com.example.online_shop.order.model.AddressFields;
 import com.example.online_shop.order.dto.OrderDto;
+import com.example.online_shop.order.mapper.AddressFieldsMapper;
 import com.example.online_shop.order.mapper.OrderMapper;
 import com.example.online_shop.order.model.Order;
 import com.example.online_shop.order.model.OrderItem;
@@ -20,6 +21,7 @@ import com.example.online_shop.shared.exception.core.*;
 import com.example.online_shop.shared.exception.domain.*;
 import com.example.online_shop.user.model.User;
 import com.example.online_shop.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,24 +36,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
+
     private final OrderMapper orderMapper;
     private final OrderRepository orderRepository;
     private final ShoppingCartRepository cartRepository;
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
-
-    public OrderServiceImpl(OrderMapper orderMapper,
-                           OrderRepository orderRepository,
-                           ShoppingCartRepository cartRepository,
-                           UserRepository userRepository,
-                           AddressRepository addressRepository) {
-        this.orderMapper = orderMapper;
-        this.orderRepository = orderRepository;
-        this.cartRepository = cartRepository;
-        this.userRepository = userRepository;
-        this.addressRepository = addressRepository;
-    }
+    private final AddressFieldsMapper addressFieldsMapper;
 
     @Override
     public OrderDto getOrderById(Long id) {
@@ -190,43 +183,11 @@ public class OrderServiceImpl implements OrderService {
             if (savedAddress.getArchived()) {
                 throw new BusinessException("Cannot use archived address");
             }
-            return convertToAddressFields(savedAddress);
+            return addressFieldsMapper.toAddressFields(savedAddress);
         } else if (orderDto.getShippingAddress() != null) {
-            return convertToAddressFields(orderDto.getShippingAddress());
+            return addressFieldsMapper.toAddressFields(orderDto.getShippingAddress());
         } else {
             throw new ValidationException("Either addressId or shippingAddress must be provided");
         }
-    }
-
-    /**
-     * Converts Address entity to AddressFields (snapshot for order).
-     */
-    private AddressFields convertToAddressFields(Address address) {
-        AddressFields fields = new AddressFields();
-        fields.setFullName(address.getFullName());
-        fields.setAddressLine1(address.getAddressLine1());
-        fields.setAddressLine2(address.getAddressLine2());
-        fields.setCity(address.getCity());
-        fields.setState(address.getState());
-        fields.setPostalCode(address.getPostalCode());
-        fields.setCountryCode(address.getCountryCode().toUpperCase());
-        fields.setPhone(address.getPhone());
-        return fields;
-    }
-
-    /**
-     * Converts AddressDto to AddressFields (snapshot for order).
-     */
-    private AddressFields convertToAddressFields(AddressDto addressDto) {
-        AddressFields fields = new AddressFields();
-        fields.setFullName(addressDto.getFullName());
-        fields.setAddressLine1(addressDto.getAddressLine1());
-        fields.setAddressLine2(addressDto.getAddressLine2());
-        fields.setCity(addressDto.getCity());
-        fields.setState(addressDto.getState());
-        fields.setPostalCode(addressDto.getPostalCode());
-        fields.setCountryCode(addressDto.getCountryCode().toUpperCase());
-        fields.setPhone(addressDto.getPhone());
-        return fields;
     }
 }

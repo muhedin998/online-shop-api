@@ -8,7 +8,9 @@ import com.example.online_shop.cart.model.ShoppingCart;
 import com.example.online_shop.cart.repository.ShoppingCartRepository;
 import com.example.online_shop.order.dto.CreateOrderRequestDto;
 import com.example.online_shop.order.dto.OrderDto;
+import com.example.online_shop.order.mapper.AddressFieldsMapper;
 import com.example.online_shop.order.mapper.OrderMapper;
+import com.example.online_shop.order.model.AddressFields;
 import com.example.online_shop.order.model.Order;
 import com.example.online_shop.order.model.OrderStatus;
 import com.example.online_shop.order.repository.OrderRepository;
@@ -51,6 +53,9 @@ class OrderServiceImplTest {
 
     @Mock
     private AddressRepository addressRepository;
+
+    @Mock
+    private AddressFieldsMapper addressFieldsMapper;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -133,6 +138,7 @@ class OrderServiceImplTest {
         // Arrange
         when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(testCart));
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(addressFieldsMapper.toAddressFields(any(AddressDto.class))).thenReturn(new AddressFields());
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
         when(cartRepository.save(any(ShoppingCart.class))).thenReturn(testCart);
         when(orderMapper.toDto(any(Order.class))).thenReturn(testOrderDto);
@@ -186,6 +192,7 @@ class OrderServiceImplTest {
         // Arrange
         when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(testCart));
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(addressFieldsMapper.toAddressFields(any(AddressDto.class))).thenReturn(new AddressFields());
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
         when(cartRepository.save(any(ShoppingCart.class))).thenReturn(testCart);
         when(orderMapper.toDto(any(Order.class))).thenReturn(testOrderDto);
@@ -217,6 +224,7 @@ class OrderServiceImplTest {
         when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(testCart));
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(addressRepository.findById(1L)).thenReturn(Optional.of(savedAddress));
+        when(addressFieldsMapper.toAddressFields(any(Address.class))).thenReturn(new AddressFields());
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
         when(cartRepository.save(any(ShoppingCart.class))).thenReturn(testCart);
         when(orderMapper.toDto(any(Order.class))).thenReturn(testOrderDto);
