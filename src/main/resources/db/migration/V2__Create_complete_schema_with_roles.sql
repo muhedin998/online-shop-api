@@ -1,5 +1,4 @@
--- Create users table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -8,8 +7,7 @@ CREATE TABLE users (
     last_name VARCHAR(255)
 );
 
--- Create products table
-CREATE TABLE products (
+CREATE TABLE IF NOT EXISTS products (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -19,23 +17,20 @@ CREATE TABLE products (
     main_image_url VARCHAR(255)
 );
 
--- Create product_images table for carousel images
-CREATE TABLE product_images (
+CREATE TABLE IF NOT EXISTS product_images (
     product_id BIGINT NOT NULL,
     image_url VARCHAR(255) NOT NULL,
     PRIMARY KEY (product_id, image_url),
     CONSTRAINT fk_product_images_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
--- Create shopping_carts table
-CREATE TABLE shopping_carts (
+CREATE TABLE IF NOT EXISTS shopping_carts (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL UNIQUE,
     CONSTRAINT fk_shopping_carts_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create cart_items table
-CREATE TABLE cart_items (
+CREATE TABLE IF NOT EXISTS cart_items (
     id BIGSERIAL PRIMARY KEY,
     cart_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
@@ -45,8 +40,7 @@ CREATE TABLE cart_items (
     CONSTRAINT unique_cart_product UNIQUE (cart_id, product_id)
 );
 
--- Create orders table
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     order_date TIMESTAMP NOT NULL,
@@ -55,8 +49,7 @@ CREATE TABLE orders (
     CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create order_items table
-CREATE TABLE order_items (
+CREATE TABLE IF NOT EXISTS order_items (
     id BIGSERIAL PRIMARY KEY,
     order_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
@@ -66,14 +59,12 @@ CREATE TABLE order_items (
     CONSTRAINT fk_order_items_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
--- Create roles table
-CREATE TABLE roles (
+CREATE TABLE IF NOT EXISTS roles (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(20) NOT NULL UNIQUE
 );
 
--- Create user_roles join table
-CREATE TABLE user_roles (
+CREATE TABLE IF NOT EXISTS user_roles (
     user_id BIGINT NOT NULL,
     role_id BIGINT NOT NULL,
     PRIMARY KEY (user_id, role_id),
@@ -81,19 +72,18 @@ CREATE TABLE user_roles (
     CONSTRAINT fk_user_roles_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 );
 
--- Insert default roles
-INSERT INTO roles (name) VALUES ('ROLE_USER'), ('ROLE_ADMIN'), ('ROLE_EMPLOYEE');
+INSERT INTO roles (name) VALUES ('ROLE_USER'), ('ROLE_ADMIN'), ('ROLE_EMPLOYEE')
+ON CONFLICT (name) DO NOTHING;
 
--- Create indexes for better performance
-CREATE INDEX idx_users_username ON users(username);
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_products_featured ON products(featured);
-CREATE INDEX idx_shopping_carts_user ON shopping_carts(user_id);
-CREATE INDEX idx_cart_items_cart ON cart_items(cart_id);
-CREATE INDEX idx_cart_items_product ON cart_items(product_id);
-CREATE INDEX idx_orders_user ON orders(user_id);
-CREATE INDEX idx_orders_date ON orders(order_date);
-CREATE INDEX idx_order_items_order ON order_items(order_id);
-CREATE INDEX idx_order_items_product ON order_items(product_id);
-CREATE INDEX idx_user_roles_user_id ON user_roles(user_id);
-CREATE INDEX idx_user_roles_role_id ON user_roles(role_id);
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_products_featured ON products(featured);
+CREATE INDEX IF NOT EXISTS idx_shopping_carts_user ON shopping_carts(user_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_cart ON cart_items(cart_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_product ON cart_items(product_id);
+CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_date ON orders(order_date);
+CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_product ON order_items(product_id);
+CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON user_roles(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_roles_role_id ON user_roles(role_id);
