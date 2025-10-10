@@ -10,6 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Set;
+
 @RestController
 @RequestMapping("/api/v1/orders")
 public class OrderController {
@@ -38,5 +41,12 @@ public class OrderController {
     public ResponseEntity<Void> cancelOrder(@PathVariable Long orderId) {
         orderService.cancelOrder(orderId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/user/{userId}")
+    @Operation(summary = "Get all orders for a user")
+    public ResponseEntity<List<OrderDto>> getOrdersByUser(@PathVariable Long userId) {
+        List<OrderDto> orderDtos = orderService.getOrdersByUserId(userId);
+        return ResponseEntity.ok(orderDtos);
     }
 }

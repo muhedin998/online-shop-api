@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -149,6 +150,24 @@ public class OrderServiceImpl implements OrderService {
         log.info("Order ID: {} has been cancelled", orderId);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderDto> getOrdersByUserId(Long userId) {
+        log.info("Fetching orders for user ID: {}", userId);
+
+        // Verify user exists
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFoundException(userId);
+        }
+
+        List<Order> orders = orderRepository.findByUserId(userId);
+        log.debug("Found {} orders for user ID: {}", orders.size(), userId);
+
+        return orders.stream()
+                .map(orderMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
     /**
      * Generates a unique tracking number for orders.
      * Format: TRK-{UUID} (e.g., TRK-550e8400-e29b-41d4-a716-446655440000)
@@ -163,23 +182,16 @@ public class OrderServiceImpl implements OrderService {
      */
     private AddressFields resolveShippingAddress(CreateOrderRequestDto orderDto, Long userId) {
         if (orderDto.getAddressId() != null) {
-            // Use saved address from address book
             Address savedAddress = addressRepository.findById(orderDto.getAddressId())
                     .orElseThrow(() -> new AddressNotFoundException(orderDto.getAddressId()));
-
-            // Verify address belongs to the user
             if (!savedAddress.getUser().getId().equals(userId)) {
                 throw new UnauthorizedAccessException("Address does not belong to the user");
             }
-
-            // Verify address is not archived
             if (savedAddress.getArchived()) {
                 throw new BusinessException("Cannot use archived address");
             }
-
             return convertToAddressFields(savedAddress);
         } else if (orderDto.getShippingAddress() != null) {
-            // Use new address provided in the request
             return convertToAddressFields(orderDto.getShippingAddress());
         } else {
             throw new ValidationException("Either addressId or shippingAddress must be provided");
