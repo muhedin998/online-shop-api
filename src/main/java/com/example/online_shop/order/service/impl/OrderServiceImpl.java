@@ -9,6 +9,7 @@ import com.example.online_shop.cart.repository.ShoppingCartRepository;
 import com.example.online_shop.order.dto.CreateOrderRequestDto;
 import com.example.online_shop.order.model.AddressFields;
 import com.example.online_shop.order.dto.OrderDto;
+import com.example.online_shop.order.dto.UpdateOrderStatusRequestDto;
 import com.example.online_shop.order.mapper.AddressFieldsMapper;
 import com.example.online_shop.order.mapper.OrderMapper;
 import com.example.online_shop.order.model.Order;
@@ -159,6 +160,48 @@ public class OrderServiceImpl implements OrderService {
         return orders.stream()
                 .map(orderMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public OrderDto updateOrderStatus(Long orderId, UpdateOrderStatusRequestDto requestDto) {
+        log.info("Updating order status for order ID: {} to {}", orderId, requestDto.getStatus());
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        OrderStatus oldStatus = order.getStatus();
+        OrderStatus newStatus = requestDto.getStatus();
+
+        // Validate status transition
+        validateStatusTransition(oldStatus, newStatus);
+
+        order.setStatus(newStatus);
+        Order updatedOrder = orderRepository.save(order);
+
+        log.info("Successfully updated order ID: {} from {} to {}", orderId, oldStatus, newStatus);
+        return orderMapper.toDto(updatedOrder);
+    }
+
+    /**
+     * Validates if the status transition is allowed.
+     * Prevents invalid state transitions like DELIVERED -> PENDING.
+     */
+    private void validateStatusTransition(OrderStatus from, OrderStatus to) {
+        // Can't change status from terminal states
+        if (from == OrderStatus.CANCELED || from == OrderStatus.REFUNDED || from == OrderStatus.COMPLETED) {
+            throw new BusinessException("Cannot change status from terminal state: " + from);
+        }
+
+        // Can't go back to PENDING from any other state
+        if (to == OrderStatus.PENDING && from != OrderStatus.PENDING) {
+            throw new BusinessException("Cannot revert order back to PENDING status");
+        }
+
+        // Can't go from DELIVERED to SHIPPED
+        if (from == OrderStatus.DELIVERED && to == OrderStatus.SHIPPED) {
+            throw new BusinessException("Cannot change status from DELIVERED back to SHIPPED");
+        }
     }
 
     /**
