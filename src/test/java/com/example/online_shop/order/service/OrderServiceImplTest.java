@@ -8,6 +8,7 @@ import com.example.online_shop.cart.model.ShoppingCart;
 import com.example.online_shop.cart.repository.ShoppingCartRepository;
 import com.example.online_shop.order.dto.CreateOrderRequestDto;
 import com.example.online_shop.order.dto.OrderDto;
+import com.example.online_shop.order.dto.UpdateOrderStatusRequestDto;
 import com.example.online_shop.order.mapper.AddressFieldsMapper;
 import com.example.online_shop.order.mapper.OrderMapper;
 import com.example.online_shop.order.model.AddressFields;
@@ -291,5 +292,168 @@ class OrderServiceImplTest {
         // Act & Assert
         assertThrows(ValidationException.class,
                 () -> orderService.createOrder(emptyRequest, 1L));
+    }
+
+    @Test
+    void updateOrderStatus_ValidTransition_Success() {
+        // Arrange
+        UpdateOrderStatusRequestDto updateRequest = new UpdateOrderStatusRequestDto();
+        updateRequest.setStatus(OrderStatus.SHIPPED);
+
+        testOrder.setStatus(OrderStatus.PENDING);
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
+        when(orderRepository.save(testOrder)).thenReturn(testOrder);
+        when(orderMapper.toDto(testOrder)).thenReturn(testOrderDto);
+
+        // Act
+        OrderDto result = orderService.updateOrderStatus(1L, updateRequest);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(OrderStatus.SHIPPED, testOrder.getStatus());
+        verify(orderRepository).findById(1L);
+        verify(orderRepository).save(testOrder);
+    }
+
+    @Test
+    void updateOrderStatus_NonExistingOrder_ThrowsException() {
+        // Arrange
+        UpdateOrderStatusRequestDto updateRequest = new UpdateOrderStatusRequestDto();
+        updateRequest.setStatus(OrderStatus.SHIPPED);
+
+        when(orderRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(OrderNotFoundException.class,
+                () -> orderService.updateOrderStatus(999L, updateRequest));
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void updateOrderStatus_FromTerminalState_ThrowsException() {
+        // Arrange
+        UpdateOrderStatusRequestDto updateRequest = new UpdateOrderStatusRequestDto();
+        updateRequest.setStatus(OrderStatus.SHIPPED);
+
+        testOrder.setStatus(OrderStatus.CANCELED);
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> orderService.updateOrderStatus(1L, updateRequest));
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void updateOrderStatus_FromCompletedState_ThrowsException() {
+        // Arrange
+        UpdateOrderStatusRequestDto updateRequest = new UpdateOrderStatusRequestDto();
+        updateRequest.setStatus(OrderStatus.SHIPPED);
+
+        testOrder.setStatus(OrderStatus.COMPLETED);
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> orderService.updateOrderStatus(1L, updateRequest));
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void updateOrderStatus_RevertToPending_ThrowsException() {
+        // Arrange
+        UpdateOrderStatusRequestDto updateRequest = new UpdateOrderStatusRequestDto();
+        updateRequest.setStatus(OrderStatus.PENDING);
+
+        testOrder.setStatus(OrderStatus.SHIPPED);
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> orderService.updateOrderStatus(1L, updateRequest));
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void updateOrderStatus_DeliveredToShipped_ThrowsException() {
+        // Arrange
+        UpdateOrderStatusRequestDto updateRequest = new UpdateOrderStatusRequestDto();
+        updateRequest.setStatus(OrderStatus.SHIPPED);
+
+        testOrder.setStatus(OrderStatus.DELIVERED);
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> orderService.updateOrderStatus(1L, updateRequest));
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void updateOrderStatus_PendingToDelivered_Success() {
+        // Arrange
+        UpdateOrderStatusRequestDto updateRequest = new UpdateOrderStatusRequestDto();
+        updateRequest.setStatus(OrderStatus.DELIVERED);
+
+        testOrder.setStatus(OrderStatus.PENDING);
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
+        when(orderRepository.save(testOrder)).thenReturn(testOrder);
+        when(orderMapper.toDto(testOrder)).thenReturn(testOrderDto);
+
+        // Act
+        OrderDto result = orderService.updateOrderStatus(1L, updateRequest);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(OrderStatus.DELIVERED, testOrder.getStatus());
+        verify(orderRepository).save(testOrder);
+    }
+
+    @Test
+    void updateOrderStatus_ShippedToDelivered_Success() {
+        // Arrange
+        UpdateOrderStatusRequestDto updateRequest = new UpdateOrderStatusRequestDto();
+        updateRequest.setStatus(OrderStatus.DELIVERED);
+
+        testOrder.setStatus(OrderStatus.SHIPPED);
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
+        when(orderRepository.save(testOrder)).thenReturn(testOrder);
+        when(orderMapper.toDto(testOrder)).thenReturn(testOrderDto);
+
+        // Act
+        OrderDto result = orderService.updateOrderStatus(1L, updateRequest);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(OrderStatus.DELIVERED, testOrder.getStatus());
+        verify(orderRepository).save(testOrder);
+    }
+
+    @Test
+    void updateOrderStatus_PendingToOnHold_Success() {
+        // Arrange
+        UpdateOrderStatusRequestDto updateRequest = new UpdateOrderStatusRequestDto();
+        updateRequest.setStatus(OrderStatus.ON_HOLD);
+
+        testOrder.setStatus(OrderStatus.PENDING);
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
+        when(orderRepository.save(testOrder)).thenReturn(testOrder);
+        when(orderMapper.toDto(testOrder)).thenReturn(testOrderDto);
+
+        // Act
+        OrderDto result = orderService.updateOrderStatus(1L, updateRequest);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(OrderStatus.ON_HOLD, testOrder.getStatus());
+        verify(orderRepository).save(testOrder);
     }
 }

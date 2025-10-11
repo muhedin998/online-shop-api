@@ -2,11 +2,15 @@ package com.example.online_shop.product.service;
 
 import com.example.online_shop.product.dto.CreateProductRequestDto;
 import com.example.online_shop.product.dto.ProductDto;
+import com.example.online_shop.product.dto.ProductSearchCriteria;
 import com.example.online_shop.product.dto.UpdateProductRequestDto;
 import com.example.online_shop.product.mapper.ProductMapper;
 import com.example.online_shop.product.model.Product;
+import com.example.online_shop.product.repository.ProductCategoryRepository;
 import com.example.online_shop.product.repository.ProductRepository;
 import com.example.online_shop.product.service.impl.ProductServiceImpl;
+import com.example.online_shop.shared.exception.core.ValidationException;
+import com.example.online_shop.shared.exception.domain.ProductCategoryNotFoundException;
 import com.example.online_shop.shared.exception.domain.ProductNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,13 +18,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.OngoingStubbing;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("ALL")
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest {
 
@@ -36,6 +44,9 @@ class ProductServiceImplTest {
 
     @Mock
     private ProductMapper productMapper;
+
+    @Mock
+    private ProductCategoryRepository categoryRepository;
 
     @InjectMocks
     private ProductServiceImpl productService;
@@ -113,7 +124,7 @@ class ProductServiceImplTest {
     @Test
     void getFeaturedProducts_ReturnsListOfProducts() {
         // Arrange
-        List<Product> featuredProducts = Arrays.asList(testProduct);
+        List<Product> featuredProducts = Collections.singletonList(testProduct);
         when(productRepository.findByFeaturedTrue()).thenReturn(featuredProducts);
         when(productMapper.toDto(testProduct)).thenReturn(testProductDto);
 
@@ -130,7 +141,7 @@ class ProductServiceImplTest {
     void getNonFeaturedProducts_ReturnsPageOfProducts() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Product> productPage = new PageImpl<>(Arrays.asList(testProduct));
+        Page<Product> productPage = new PageImpl<>(Collections.singletonList(testProduct));
         when(productRepository.findByFeaturedFalse(pageable)).thenReturn(productPage);
         when(productMapper.toDto(testProduct)).thenReturn(testProductDto);
 
@@ -213,5 +224,151 @@ class ProductServiceImplTest {
 
         // Act & Assert
         assertThrows(ProductNotFoundException.class, () -> productService.getProductById(999L));
+    }
+
+    @Test
+    void searchProducts_WithAllCriteria_Success() {
+        // Arrange
+        ProductSearchCriteria criteria = ProductSearchCriteria.builder()
+                .searchText("laptop")
+                .categoryId(1L)
+                .minPrice(BigDecimal.valueOf(500))
+                .maxPrice(BigDecimal.valueOf(2000))
+                .featured(true)
+                .inStock(true)
+                .build();
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Product> productPage = new PageImpl<>(Collections.singletonList(testProduct));
+
+        when(categoryRepository.existsById(1L)).thenReturn(true);
+        OngoingStubbing<Page> pageOngoingStubbing = when(productRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(productPage);
+        when(productMapper.toDto(testProduct)).thenReturn(testProductDto);
+
+        // Act
+        Page<ProductDto> result = productService.searchProducts(criteria, pageable);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        verify(categoryRepository).existsById(1L);
+        verify(productRepository).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void searchProducts_WithSearchTextOnly_Success() {
+        // Arrange
+        ProductSearchCriteria criteria = ProductSearchCriteria.builder()
+                .searchText("test product")
+                .build();
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Product> productPage = new PageImpl<>(Collections.singletonList(testProduct));
+
+        when(productRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(productPage);
+        when(productMapper.toDto(testProduct)).thenReturn(testProductDto);
+
+        // Act
+        Page<ProductDto> result = productService.searchProducts(criteria, pageable);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        verify(productRepository).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void searchProducts_InvalidPriceRange_ThrowsException() {
+        // Arrange
+        ProductSearchCriteria criteria = ProductSearchCriteria.builder()
+                .minPrice(BigDecimal.valueOf(2000))
+                .maxPrice(BigDecimal.valueOf(500))
+                .build();
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act & Assert
+        assertThrows(ValidationException.class,
+                () -> productService.searchProducts(criteria, pageable));
+        verify(productRepository, never()).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void searchProducts_NonExistentCategory_ThrowsException() {
+        // Arrange
+        ProductSearchCriteria criteria = ProductSearchCriteria.builder()
+                .categoryId(999L)
+                .build();
+
+        Pageable pageable = PageRequest.of(0, 10);
+        when(categoryRepository.existsById(999L)).thenReturn(false);
+
+        // Act & Assert
+        assertThrows(ProductCategoryNotFoundException.class,
+                () -> productService.searchProducts(criteria, pageable));
+        verify(productRepository, never()).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void searchProducts_WithPriceRangeOnly_Success() {
+        // Arrange
+        ProductSearchCriteria criteria = ProductSearchCriteria.builder()
+                .minPrice(BigDecimal.valueOf(50))
+                .maxPrice(BigDecimal.valueOf(150))
+                .build();
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Product> productPage = new PageImpl<>(Arrays.asList(testProduct));
+
+        when(productRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(productPage);
+        when(productMapper.toDto(testProduct)).thenReturn(testProductDto);
+
+        // Act
+        Page<ProductDto> result = productService.searchProducts(criteria, pageable);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+    }
+
+    @Test
+    void searchProducts_InStockOnly_Success() {
+        // Arrange
+        ProductSearchCriteria criteria = ProductSearchCriteria.builder()
+                .inStock(true)
+                .build();
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Product> productPage = new PageImpl<>(Arrays.asList(testProduct));
+
+        when(productRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(productPage);
+        when(productMapper.toDto(testProduct)).thenReturn(testProductDto);
+
+        // Act
+        Page<ProductDto> result = productService.searchProducts(criteria, pageable);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+    }
+
+    @Test
+    void searchProducts_EmptyResult() {
+        // Arrange
+        ProductSearchCriteria criteria = ProductSearchCriteria.builder()
+                .searchText("nonexistent")
+                .build();
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Product> emptyPage = new PageImpl<>(Arrays.asList());
+
+        when(productRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(emptyPage);
+
+        // Act
+        Page<ProductDto> result = productService.searchProducts(criteria, pageable);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(0, result.getContent().size());
     }
 }
