@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.5.6</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>com.example</groupId>
 	<artifactId>online-shop</artifactId>
@@ -240,7 +240,7 @@
 						<exclude>**/dto/**</exclude>
 						<!-- Exclude entities (JPA models) -->
 						<exclude>**/model/**</exclude>
-						<!-- Exclude main application class -->
+						<!-- Exclude the main application class -->
 						<exclude>**/OnlineShopApplication.class</exclude>
 						<!-- Exclude exception classes -->
 						<exclude>**/exception/**</exclude>
