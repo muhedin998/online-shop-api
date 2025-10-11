@@ -36,6 +36,11 @@
     </properties>
 	<dependencies>
 		<dependency>
+			<groupId>me.paulschwarz</groupId>
+			<artifactId>spring-dotenv</artifactId>
+			<version>2.5.4</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
@@ -141,9 +146,7 @@
                             <version>${org.mapstruct.version}</version>
                         </path>
 					</annotationProcessorPaths>
-                    <formats>
-                        <format>XML</format>
-                    </formats>
+
 				</configuration>
 			</plugin>
 			<plugin>
@@ -182,13 +185,15 @@
 						</goals>
 					</execution>
 
-					<!-- Enforce minimum coverage thresholds -->
 					<execution>
 						<id>check</id>
 						<goals>
 							<goal>check</goal>
 						</goals>
 						<configuration>
+                            <formats>
+                                <format>XML</format>
+                            </formats>
 							<rules>
 								<rule>
 									<element>BUNDLE</element>
@@ -208,6 +213,7 @@
 									</limits>
 								</rule>
 							</rules>
+
 						</configuration>
 					</execution>
 				</executions>

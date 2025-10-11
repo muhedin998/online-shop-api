@@ -47,15 +47,19 @@ src/main/resources
 
 
 ## Configuration
-Default configs are in `src/main/resources/application.properties`. Override via environment variables in local/dev/CI.
+Sensitive configuration is now provided via environment variables or a local `.env` file.
 
-Required for full functionality:
+- Copy `.env.example` to `.env` and fill in values
+- `.env` is ignored by git
+- Loaded automatically via `spring-dotenv`
+
+Required variables:
 - Database: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`
 - JWT: `APPLICATION_SECURITY_JWT_SECRET_KEY`, `APPLICATION_SECURITY_JWT_EXPIRATION`
-- Mail (for forgot/reset password): `SPRING_MAIL_HOST`, `SPRING_MAIL_PORT`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD`
+- Mail: `SPRING_MAIL_HOST`, `SPRING_MAIL_PORT`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD`
 - Frontend reset link base: `APP_FRONTEND_URL`
 
-Examples:
+Example `.env` (see `.env.example`):
 ```
 # Database
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/shop
@@ -244,4 +248,3 @@ Flyway migrations in `src/main/resources/db/migration` create core tables, categ
 - API Endpoints: `API_ENDPOINTS.md` (merged and updated here)
 - Testing Strategy: `TESTING_STRATEGY.md`
 - Coverage Reports: `COVERAGE_SUMMARY.md`, `COVERAGE_FINAL_REPORT.md`, `FINAL_COVERAGE_ACHIEVEMENT.md`
-
