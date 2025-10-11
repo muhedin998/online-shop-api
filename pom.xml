@@ -29,6 +29,10 @@
 	<properties>
 		<java.version>17</java.version>
         <org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
+        <jacoco.version>0.8.12</jacoco.version>
+        <!-- Code coverage thresholds -->
+        <jacoco.line.coverage>0.70</jacoco.line.coverage>
+        <jacoco.branch.coverage>0.65</jacoco.branch.coverage>
     </properties>
 	<dependencies>
 		<dependency>
@@ -113,6 +117,11 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -143,6 +152,79 @@
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
 						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+
+			<!-- JaCoCo Maven Plugin for Code Coverage -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.version}</version>
+				<executions>
+					<!-- Prepare JaCoCo agent for test execution -->
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+
+					<!-- Generate coverage report after tests -->
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+
+					<!-- Enforce minimum coverage thresholds -->
+					<execution>
+						<id>check</id>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<!-- Line coverage minimum -->
+										<limit>
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${jacoco.line.coverage}</minimum>
+										</limit>
+										<!-- Branch coverage minimum -->
+										<limit>
+											<counter>BRANCH</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${jacoco.branch.coverage}</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<!-- Exclude generated code and configuration classes -->
+					<excludes>
+						<!-- Exclude Lombok generated code -->
+						<exclude>**/*Builder.class</exclude>
+						<!-- Exclude MapStruct generated mappers -->
+						<exclude>**/mapper/*Impl.class</exclude>
+						<!-- Exclude configuration classes -->
+						<exclude>**/configuration/**</exclude>
+						<!-- Exclude DTOs (mostly data holders) -->
+						<exclude>**/dto/**</exclude>
+						<!-- Exclude entities (JPA models) -->
+						<exclude>**/model/**</exclude>
+						<!-- Exclude main application class -->
+						<exclude>**/OnlineShopApplication.class</exclude>
+						<!-- Exclude exception classes -->
+						<exclude>**/exception/**</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
