@@ -2,9 +2,11 @@ package com.example.online_shop.product.controller;
 
 import com.example.online_shop.product.dto.CreateProductRequestDto;
 import com.example.online_shop.product.dto.ProductDto;
+import com.example.online_shop.product.dto.ProductSearchCriteria;
 import com.example.online_shop.product.dto.UpdateProductRequestDto;
 import com.example.online_shop.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -13,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -70,6 +73,47 @@ public class ProductController {
     public ResponseEntity<ProductDto> getProduct(@PathVariable Long productId) {
         ProductDto productDto = productService.getProductById(productId);
         return ResponseEntity.ok(productDto);
+    }
+
+    @GetMapping("/search")
+    @Operation(
+        summary = "Search and filter products",
+        description = "Search products by text (name/description) and filter by category, price range, featured status, and stock availability. All parameters are optional."
+    )
+    @ApiResponse(responseCode = "200", description = "Products retrieved successfully")
+    public ResponseEntity<Page<ProductDto>> searchProducts(
+            @Parameter(description = "Search text for product name and description")
+            @RequestParam(required = false) String searchText,
+
+            @Parameter(description = "Filter by category ID")
+            @RequestParam(required = false) Long categoryId,
+
+            @Parameter(description = "Minimum price (inclusive)")
+            @RequestParam(required = false) BigDecimal minPrice,
+
+            @Parameter(description = "Maximum price (inclusive)")
+            @RequestParam(required = false) BigDecimal maxPrice,
+
+            @Parameter(description = "Filter by featured products only")
+            @RequestParam(required = false) Boolean featured,
+
+            @Parameter(description = "Filter by in-stock products only")
+            @RequestParam(required = false) Boolean inStock,
+
+            @Parameter(description = "Pagination parameters (page, size, sort)")
+            Pageable pageable) {
+
+        ProductSearchCriteria criteria = ProductSearchCriteria.builder()
+                .searchText(searchText)
+                .categoryId(categoryId)
+                .minPrice(minPrice)
+                .maxPrice(maxPrice)
+                .featured(featured)
+                .inStock(inStock)
+                .build();
+
+        Page<ProductDto> products = productService.searchProducts(criteria, pageable);
+        return ResponseEntity.ok(products);
     }
 
 }

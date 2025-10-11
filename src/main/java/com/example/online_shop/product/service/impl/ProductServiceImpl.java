@@ -2,6 +2,7 @@ package com.example.online_shop.product.service.impl;
 
 import com.example.online_shop.product.dto.CreateProductRequestDto;
 import com.example.online_shop.product.dto.ProductDto;
+import com.example.online_shop.product.dto.ProductSearchCriteria;
 import com.example.online_shop.product.dto.UpdateProductRequestDto;
 import com.example.online_shop.product.mapper.ProductMapper;
 import com.example.online_shop.product.model.Product;
@@ -9,11 +10,13 @@ import com.example.online_shop.product.model.ProductCategory;
 import com.example.online_shop.product.repository.ProductCategoryRepository;
 import com.example.online_shop.product.repository.ProductRepository;
 import com.example.online_shop.product.service.ProductService;
+import com.example.online_shop.product.specification.ProductSpecification;
 import com.example.online_shop.shared.exception.domain.ProductCategoryNotFoundException;
 import com.example.online_shop.shared.exception.domain.ProductNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -112,5 +115,31 @@ public class ProductServiceImpl implements ProductService {
         Product existingProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
         return productMapper.toDto(existingProduct);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductDto> searchProducts(ProductSearchCriteria criteria, Pageable pageable) {
+        log.info("Searching products with criteria: {}", criteria);
+
+        if (criteria.getMinPrice() != null && criteria.getMaxPrice() != null) {
+            if (criteria.getMinPrice().compareTo(criteria.getMaxPrice()) > 0) {
+                throw new com.example.online_shop.shared.exception.core.ValidationException(
+                        "Minimum price cannot be greater than maximum price"
+                );
+            }
+        }
+
+        if (criteria.getCategoryId() != null) {
+            if (!categoryRepository.existsById(criteria.getCategoryId())) {
+                throw new ProductCategoryNotFoundException(criteria.getCategoryId());
+            }
+        }
+
+        Specification<Product> spec = ProductSpecification.withCriteria(criteria);
+        Page<Product> productPage = productRepository.findAll(spec, pageable);
+
+        log.debug("Found {} products matching criteria", productPage.getTotalElements());
+        return productPage.map(productMapper::toDto);
     }
 }
