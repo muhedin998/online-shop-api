@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -124,5 +125,13 @@ public class UserServiceImpl implements UserService {
         tokenRepository.save(resetToken);
 
         log.info("Password successfully reset for user: {}", user.getEmail());
+    }
+
+    @Override
+    public List<String> getRoleNamesByUsername(String username) {
+        User user = loadUserByUsername(username);
+        return user.getRoles().stream()
+                .map(role -> role.getName().name())
+                .toList();
     }
 }

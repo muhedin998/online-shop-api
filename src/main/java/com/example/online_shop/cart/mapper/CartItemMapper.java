@@ -12,6 +12,7 @@ public interface CartItemMapper {
      * Converts a CartItem entity to a CartItemDto.
      * It maps the nested product's name and price to the DTO.
      */
+    @Mapping(source = "id", target = "id")
     @Mapping(source = "product.name", target = "productName")
     @Mapping(source = "product.price", target = "price")
     @Mapping(source = "product.id", target = "productId")

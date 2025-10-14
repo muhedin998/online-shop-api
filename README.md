@@ -126,6 +126,7 @@ Base path: `/api/v1`
 
 - Users (`/users`)
   - GET `/{username}` — Get user profile (auth required)
+  - GET `/{username}/roles` — Get user roles (auth required)
 
 - Products (`/products`)
   - GET `/` — Paginated non-featured products (public)
@@ -144,6 +145,7 @@ Base path: `/api/v1`
   - DELETE `/{id}` — Delete category (ROLE_ADMIN)
 
 - Cart (`/cart`)
+  - GET `/{userId}` — Get user cart (auth required)
   - POST `/add` — Add item to cart (auth required)
   - PUT `/{userId}/update-quantity/{itemId}` — Update item quantity (auth required)
   - DELETE `/delete/{userId}/items/{itemId}` — Remove item (auth required)

@@ -1,6 +1,7 @@
 package com.example.online_shop.user.controller;
 
 import com.example.online_shop.user.dto.UserDto;
+import com.example.online_shop.user.dto.UserRolesDto;
 import com.example.online_shop.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,12 @@ public class UserController {
     public ResponseEntity<UserDto> getUser(@PathVariable String userUsername) {
         UserDto userDto = userService.getUserByUsername(userUsername);
         return ResponseEntity.ok(userDto);
+    }
+
+    @GetMapping("{userUsername}/roles")
+    public ResponseEntity<UserRolesDto> getUserRoles(@PathVariable String userUsername) {
+        var roles = userService.getRoleNamesByUsername(userUsername);
+        return ResponseEntity.ok(new UserRolesDto(userUsername, roles));
     }
 
 

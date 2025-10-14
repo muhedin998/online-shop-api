@@ -18,6 +18,12 @@ public class CartController {
         this.cartService = cartService;
     }
 
+    @GetMapping("/{userId}")
+    public ResponseEntity<CartDto> getCartByUser(@PathVariable Long userId) {
+        CartDto cartDto = cartService.getCartByUserId(userId);
+        return ResponseEntity.ok(cartDto);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<CartDto> addItemToCart(@RequestBody AddItemToCartRequestDto requestDto) {
         CartDto cartDto = cartService.addItemToCart(requestDto);

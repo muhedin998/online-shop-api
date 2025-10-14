@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.List;
 
 public interface UserService {
     User loadUserByUsername(String username);
@@ -19,4 +20,6 @@ public interface UserService {
     void initiatePasswordReset(String email);
 
     void resetPassword(String token, String newPassword);
+
+    List<String> getRoleNamesByUsername(String username);
 }
